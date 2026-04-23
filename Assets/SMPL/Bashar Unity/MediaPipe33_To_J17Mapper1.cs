@@ -38,6 +38,8 @@ public class MediaPipe33_To_J17Mapper1 : MonoBehaviour
     private Transform J_r_hip, J_r_knee, J_r_ankle;
 
     private bool targetsReady = false;
+    private int _framesSinceLastUpdate = 0;
+    private Vector3 _lastPelvisPos;
 
     static Transform FindDescendantWithAtLeastChildren(Transform root, int minChildren)
     {
@@ -145,6 +147,8 @@ public class MediaPipe33_To_J17Mapper1 : MonoBehaviour
         // If play mode restarted and cached refs got lost, re-cache
         if (mp[0] == null) CacheMpChildren();
 
+        _framesSinceLastUpdate++;
+
         Vector3 Ls = Pos(mp[L_SHOULDER]);
         Vector3 Rs = Pos(mp[R_SHOULDER]);
         Vector3 Le = Pos(mp[L_ELBOW]);
@@ -196,6 +200,22 @@ public class MediaPipe33_To_J17Mapper1 : MonoBehaviour
         SetTarget(J_r_hip, Rh);
         SetTarget(J_r_knee, Rk);
         SetTarget(J_r_ankle, Ra);
+
+        if (J_pelvis)
+        {
+            _lastPelvisPos = J_pelvis.position;
+            _framesSinceLastUpdate = 0;
+        }
+    }
+
+    void OnGUI()
+    {
+        if (!verboseLogs) return;
+        var pelvisName = J_pelvis ? J_pelvis.name : "null";
+        GUI.Label(new Rect(10, 10, 900, 22),
+            $"[Mapper] mediaPipeRoot='{(mediaPipeRoot ? mediaPipeRoot.name : "null")}' childCount={(mediaPipeRoot ? mediaPipeRoot.childCount : 0)}  jointRoot='{(jointRoot ? jointRoot.name : "null")}' pelvis='{pelvisName}'  framesSinceUpdate={_framesSinceLastUpdate}");
+        GUI.Label(new Rect(10, 32, 900, 22),
+            $"[Mapper] pelvisPos={_lastPelvisPos}");
     }
 
     Vector3 Pos(Transform t)
