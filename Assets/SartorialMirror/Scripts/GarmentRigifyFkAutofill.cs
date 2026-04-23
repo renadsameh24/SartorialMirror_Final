@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -17,13 +18,27 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
 
     public bool autoWireOnPlay = true;
 
+    [Tooltip("Mecanim often overwrites bone transforms each frame; SMPL FK wins in LateUpdate but a garment Animator can still fight this. Disable garment Animators so script FK matches the SMPL-style drive.")]
+    public bool disableGarmentAnimators = true;
+
+    static IEnumerable<string> BoneNameVariants(string canonical)
+    {
+        if (string.IsNullOrEmpty(canonical)) yield break;
+        yield return canonical;
+        yield return canonical.Replace('.', '_');
+        yield return canonical.Replace('.', "");
+    }
+
     static Transform FindBone(Transform root, string boneName)
     {
         if (!root) return null;
-        foreach (var t in root.GetComponentsInChildren<Transform>(true))
+        foreach (var variant in BoneNameVariants(boneName))
         {
-            if (t.name == boneName)
-                return t;
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == variant)
+                    return t;
+            }
         }
         return null;
     }
@@ -36,8 +51,20 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
         if (!fk) fk = GetComponent<SpheresToBones_FKDriver>();
         if (!fk || !garmentArmatureRoot || !jointSpheresRoot)
         {
-            Debug.LogWarning("[GarmentRigifyFkAutofill] Missing references; skipping autofill.");
+            Debug.LogWarning("[GarmentRigifyFkAutofill] Missing references; skipping autofill.", this);
             return;
+        }
+
+        if (disableGarmentAnimators)
+        {
+            foreach (var anim in garmentArmatureRoot.GetComponentsInChildren<Animator>(true))
+            {
+                if (anim && anim.enabled)
+                {
+                    anim.enabled = false;
+                    Debug.Log("[GarmentRigifyFkAutofill] Disabled Animator on '" + anim.name + "' so FK can drive bones.", anim);
+                }
+            }
         }
 
         var spine = FindBone(garmentArmatureRoot, "DEF-spine");
@@ -49,6 +76,8 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
             fk.followRootPosition = true;
             fk.followRootRotation = false;
         }
+        else
+            Debug.LogWarning("[GarmentRigifyFkAutofill] Root follow not set (need DEF-spine + J_pelvis). Spine=" + (spine != null) + " J_pelvis=" + (pelvisS != null), this);
 
         fk.segments = new[]
         {
@@ -57,6 +86,16 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
             BuildSeg(garmentArmatureRoot, jointSpheresRoot, "DEF-upper_arm.R", "DEF-forearm.R", "J_r_shoulder", "J_r_elbow"),
             BuildSeg(garmentArmatureRoot, jointSpheresRoot, "DEF-forearm.R", "DEF-hand.R", "J_r_elbow", "J_r_wrist"),
         };
+
+        int ok = 0;
+        foreach (var s in fk.segments)
+        {
+            if (s.bone && s.boneChild && s.sphere && s.sphereChild)
+                ok++;
+        }
+        Debug.Log($"[GarmentRigifyFkAutofill] Arm segments wired: {ok}/4. (Same J_* spheres as SMPL; garment rig must match DEF-* names or FBX underscore variants.)", this);
+        if (ok == 0)
+            Debug.LogError("[GarmentRigifyFkAutofill] No valid arm segments — check bone names under garmentArmatureRoot in Hierarchy (Rigify DEF-* / Unity renames).", this);
     }
 
     static SpheresToBones_FKDriver.Segment BuildSeg(Transform arm, Transform spheres, string bn, string bc, string sn, string sc)

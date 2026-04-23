@@ -4,6 +4,7 @@ using UnityEngine;
 /// Toggles SMPL vs garment Rigify follow while reusing the same MediaPipe → 33 spheres → J_* pipeline.
 /// Assign references from your duplicated checkpoint scene (or the original scene).
 /// </summary>
+[DefaultExecutionOrder(-200)]
 public sealed class GarmentOnlyPoseDirector : MonoBehaviour
 {
     [Header("Mode")]
@@ -26,6 +27,22 @@ public sealed class GarmentOnlyPoseDirector : MonoBehaviour
     public bool synthesizeLowerBodyFromPelvis = true;
 
     void Awake()
+    {
+        if (flexibleMapper && classicMapper)
+        {
+            flexibleMapper.mediaPipeRoot = classicMapper.mediaPipeRoot;
+            flexibleMapper.jointRoot = classicMapper.jointRoot;
+            flexibleMapper.lerp = classicMapper.lerp;
+            flexibleMapper.mirrorX = classicMapper.mirrorX;
+            flexibleMapper.globalOffset = classicMapper.globalOffset;
+        }
+
+        if (flexibleMapper)
+            flexibleMapper.synthesizeLowerBodyFromPelvis = synthesizeLowerBodyFromPelvis;
+        ApplyMode();
+    }
+
+    void Start()
     {
         if (flexibleMapper && classicMapper)
         {
