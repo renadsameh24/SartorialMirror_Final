@@ -31,8 +31,16 @@ public class SpheresToBones_FKDriver : MonoBehaviour
     [Header("Smoothing")]
     [Range(0f, 1f)] public float rotLerp = 1f; // 1 = exact, 0.3 = smoother
 
+    [Header("Debug")]
+    public bool debug = false;
+    [Tooltip("Log every N frames when debug is enabled.")]
+    public int debugEveryNFrames = 60;
+    int _dbgFrame;
+
     void LateUpdate()
     {
+        if (debug) _dbgFrame++;
+
         // 1) Root follow (position only is safest)
         if (followRootPosition && rootBone && rootSphere)
             rootBone.position = rootSphere.position;
@@ -43,14 +51,26 @@ public class SpheresToBones_FKDriver : MonoBehaviour
         // 2) Drive each bone rotation to match sphere direction
         if (segments == null) return;
 
+        bool anyValid = false;
         foreach (var s in segments)
         {
             if (!s.bone || !s.boneChild || !s.sphere || !s.sphereChild) continue;
+            anyValid = true;
 
             Vector3 boneDir = (s.boneChild.position - s.bone.position);
             Vector3 sphereDir = (s.sphereChild.position - s.sphere.position);
 
-            if (boneDir.sqrMagnitude < 1e-10f || sphereDir.sqrMagnitude < 1e-10f) continue;
+            if (boneDir.sqrMagnitude < 1e-10f || sphereDir.sqrMagnitude < 1e-10f)
+            {
+                if (debug && (_dbgFrame % Mathf.Max(1, debugEveryNFrames) == 0))
+                {
+                    Debug.LogWarning(
+                        $"[SpheresToBones_FKDriver] Zero-length dir: bone='{s.bone.name}' child='{s.boneChild.name}' boneMag={boneDir.magnitude:F6} " +
+                        $"sphere='{s.sphere.name}' child='{s.sphereChild.name}' sphereMag={sphereDir.magnitude:F6}",
+                        this);
+                }
+                continue;
+            }
 
             // rotation that turns current bone direction into desired sphere direction
             Quaternion delta = Quaternion.FromToRotation(boneDir.normalized, sphereDir.normalized);
@@ -64,5 +84,8 @@ public class SpheresToBones_FKDriver : MonoBehaviour
             if (s.applyPositionToBone)
                 s.bone.position = s.sphere.position;
         }
+
+        if (debug && !anyValid && (_dbgFrame % Mathf.Max(1, debugEveryNFrames) == 0))
+            Debug.LogWarning("[SpheresToBones_FKDriver] No valid segments (missing bone/sphere refs).", this);
     }
 }
