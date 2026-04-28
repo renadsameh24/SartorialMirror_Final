@@ -25,3 +25,5 @@ ExportedObj/
 *.apk
 *.unitypackage
 crashlytics-build.properties
+.DS_Store
+**/.DS_Store
