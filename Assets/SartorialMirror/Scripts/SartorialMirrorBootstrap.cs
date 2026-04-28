@@ -5,9 +5,11 @@ using UnityEngine;
 /// - Webcam background (UGUI)
 /// - Hide SMPL body mesh (keep bones)
 /// - Garment manager + UI selector
-/// 
+/// - WebGL stage (transparent clear + optional hide webcam UI in WebGL builds)
+///
 /// Designed to avoid touching the existing pose pipeline.
 /// </summary>
+[RequireComponent(typeof(WebGLGarmentStageController))]
 public sealed class SartorialMirrorBootstrap : MonoBehaviour
 {
     [Header("SMPL")]
@@ -56,4 +58,3 @@ public sealed class SartorialMirrorBootstrap : MonoBehaviour
             garmentManager.TrySetActive(autoSelectIndex);
     }
 }
-

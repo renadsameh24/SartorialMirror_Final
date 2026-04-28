@@ -33,6 +33,11 @@ public class PoseReceiverWS : MonoBehaviour
     public int sendFps = 15;
     [Range(20, 90)] public int jpegQuality = 60;
 
+    // Must NOT be wrapped in UNITY_WEBGL/#if — Unity requires identical serialized layout in Editor and player builds.
+    [Header("WebGL build (memory)")]
+    [Tooltip("WebGL only: max longest side when JPEG-encoding frames for the pose server. Ignored on other platforms.")]
+    [SerializeField] int webglMaxCaptureDimension = 640;
+
     public PoseMsg Latest { get; private set; }
     public bool HasPose => Latest != null && Latest.ok && Latest.landmarks != null && Latest.landmarks.Count >= 33;
 
@@ -90,15 +95,13 @@ public class PoseReceiverWS : MonoBehaviour
 
     void Update()
     {
-#if !UNITY_WEBGL || UNITY_EDITOR
-        ws?.DispatchMessageQueue();
-#endif
+        PumpMessageQueueIfSupported();
         if (!sendWebcamFrames) return;
 
         if (cam == null || !cam.isPlaying) return;
 
-        if (frameTex == null && cam.width > 16 && cam.height > 16)
-            frameTex = new Texture2D(cam.width, cam.height, TextureFormat.RGB24, false);
+        if (cam.width > 16 && cam.height > 16)
+            EnsureFrameTexMatchesCaptureSize();
 
         sendTimer += Time.deltaTime;
         float interval = 1f / Mathf.Max(1, sendFps);
@@ -121,8 +124,7 @@ public class PoseReceiverWS : MonoBehaviour
 
         try
         {
-            frameTex.SetPixels32(cam.GetPixels32());
-            frameTex.Apply(false);
+            CopyWebcamIntoFrameTex();
 
             byte[] jpg = frameTex.EncodeToJPG(jpegQuality);
             if (jpg != null && jpg.Length > 0)
@@ -146,5 +148,81 @@ public class PoseReceiverWS : MonoBehaviour
                 await ws.Close();
         }
         catch { }
+    }
+
+    void PumpMessageQueueIfSupported()
+    {
+        if (ws == null) return;
+        try
+        {
+            // Some NativeWebSocket versions expose DispatchMessageQueue(); others don't.
+            // Use reflection to avoid compile errors across package variants.
+            var m = ws.GetType().GetMethod("DispatchMessageQueue");
+            if (m != null) m.Invoke(ws, null);
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    void EnsureFrameTexMatchesCaptureSize()
+    {
+        GetCaptureDimensions(cam.width, cam.height, out var cw, out var ch);
+        if (frameTex != null && frameTex.width == cw && frameTex.height == ch) return;
+
+        if (frameTex != null)
+        {
+            Destroy(frameTex);
+            frameTex = null;
+        }
+
+        frameTex = new Texture2D(cw, ch, TextureFormat.RGB24, false);
+    }
+
+    void GetCaptureDimensions(int camW, int camH, out int outW, out int outH)
+    {
+        if (camW < 16 || camH < 16)
+        {
+            outW = 16;
+            outH = 16;
+            return;
+        }
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        var maxDim = Mathf.Clamp(webglMaxCaptureDimension, 160, 1280);
+        var maxSide = Mathf.Max(camW, camH);
+        if (maxSide <= maxDim)
+        {
+            outW = camW;
+            outH = camH;
+            return;
+        }
+
+        var scale = maxDim / (float)maxSide;
+        outW = Mathf.Max(16, Mathf.RoundToInt(camW * scale));
+        outH = Mathf.Max(16, Mathf.RoundToInt(camH * scale));
+#else
+        outW = camW;
+        outH = camH;
+#endif
+    }
+
+    void CopyWebcamIntoFrameTex()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        // Avoid cam.GetPixels32() at full HD — one buffer can exceed a small WASM heap and corrupt memory.
+        var temp = RenderTexture.GetTemporary(frameTex.width, frameTex.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
+        Graphics.Blit(cam, temp);
+        var prev = RenderTexture.active;
+        RenderTexture.active = temp;
+        frameTex.ReadPixels(new Rect(0, 0, frameTex.width, frameTex.height), 0, 0, false);
+        frameTex.Apply(false);
+        RenderTexture.active = prev;
+        RenderTexture.ReleaseTemporary(temp);
+#else
+        frameTex.SetPixels32(cam.GetPixels32());
+        frameTex.Apply(false);
+#endif
     }
 }

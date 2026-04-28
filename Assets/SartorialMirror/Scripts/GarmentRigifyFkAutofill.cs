@@ -1,11 +1,11 @@
-using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
 /// <summary>
-/// Wires <see cref="SpheresToBones_FKDriver"/> to Rigify-export DEF-* bones and the same J_* sphere
+/// Wires <see cref="SpheresToBones_FKDriver"/> to Rigify-export DEF-* arm bones and the same J_* sphere
 /// names used by the SMPL checkpoint. Add to the same GameObject as <see cref="SpheresToBones_FKDriver"/>
 /// (or assign <see cref="fk"/>). Run once in Awake when <see cref="autoWireOnPlay"/> is true.
+/// Arms-only version — no upper spine / collar / neck snap.
 /// </summary>
 [DefaultExecutionOrder(2000)]
 public sealed class GarmentRigifyFkAutofill : MonoBehaviour
@@ -42,7 +42,6 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
     {
         if (!root) return null;
 
-        // Build a normalized lookup once per call (small rigs, called a few times only).
         var want = Norm(boneName);
         if (string.IsNullOrEmpty(want)) return null;
 
@@ -55,7 +54,6 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
         }
         if (exact) return exact;
 
-        // Heuristic: allow matches that END WITH the desired name (helps if importer prefixes names).
         foreach (var t in root.GetComponentsInChildren<Transform>(true))
         {
             if (!t) continue;
@@ -89,7 +87,6 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
             }
         }
 
-        // Root follow is optional; default OFF to avoid torso collapse on Rigify exports.
         fk.rootBone = null;
         fk.rootSphere = null;
         fk.followRootPosition = false;
@@ -97,7 +94,6 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
 
         if (enableRootFollow)
         {
-            // Prefer a true root/pelvis if present; fall back to spine only if you know it's safe.
             var rootCandidate = FindBone(garmentArmatureRoot, "root")
                                ?? FindBone(garmentArmatureRoot, "DEF-pelvis")
                                ?? FindBone(garmentArmatureRoot, "DEF-hips")
@@ -132,12 +128,11 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
             if (s.bone && s.boneChild && s.sphere && s.sphereChild)
                 ok++;
         }
-        Debug.Log($"[GarmentRigifyFkAutofill] Arm segments wired: {ok}/4. (Same J_* spheres as SMPL; garment rig must match DEF-* names or FBX underscore variants.)", this);
+        Debug.Log($"[GarmentRigifyFkAutofill] Segments wired: {ok}/{fk.segments.Length} (arms only). Same J_* spheres as SMPL; garment rig must match DEF-* names or FBX underscore variants.", this);
         if (ok == 0)
         {
             Debug.LogError("[GarmentRigifyFkAutofill] No valid arm segments — check garmentArmatureRoot points at the armature/bone hierarchy (not just the mesh), and verify bone names under it.", this);
 
-            // Dump a small sample of transform names to help pick the right root + expected names.
             int shown = 0;
             var sb = new StringBuilder();
             sb.AppendLine("[GarmentRigifyFkAutofill] Sample transforms under garmentArmatureRoot:");
@@ -149,11 +144,11 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
             }
             Debug.Log(sb.ToString(), this);
 
-            Debug.LogWarning("[GarmentRigifyFkAutofill] Expected (normalized) names like: DEF-spine, DEF-upper_arm.L, DEF-forearm.L, DEF-hand.L (and .R). If your rig uses different names, we can map to them.", this);
+            Debug.LogWarning("[GarmentRigifyFkAutofill] Expected (normalized) names like: DEF-upper_arm.L, DEF-forearm.L, DEF-hand.L (and .R). If your rig uses different names, we can map to them.", this);
         }
     }
 
-    static SpheresToBones_FKDriver.Segment BuildSeg(Transform arm, Transform spheres, string bn, string bc, string sn, string sc)
+    static SpheresToBones_FKDriver.Segment BuildSeg(Transform arm, Transform spheres, string bn, string bc, string sn, string sc, bool applyPositionToBone = false)
     {
         return new SpheresToBones_FKDriver.Segment
         {
@@ -161,7 +156,7 @@ public sealed class GarmentRigifyFkAutofill : MonoBehaviour
             boneChild = FindBone(arm, bc),
             sphere = FindSphere(spheres, sn),
             sphereChild = FindSphere(spheres, sc),
-            applyPositionToBone = false
+            applyPositionToBone = applyPositionToBone
         };
     }
 }
