@@ -43,3 +43,11 @@ website/.env.*
 website/dist/
 website/build/
 website/.next/
+
+# website
+website/node_modules/
+website/.env
+website/.env.*
+website/dist/
+website/build/
+website/.next/

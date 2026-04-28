@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+  color-scheme: dark;
+
+  --font-family-ui:
+    'Manrope', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-family-display:
+    'Cormorant Garamond', 'Iowan Old Style', 'Times New Roman', serif;
+  --font-family-admin-display: var(--font-family-ui);
+
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+
+  --font-size-label: 16px;
+  --font-size-body: 18px;
+  --font-size-heading: 32px;
+  --font-size-display: 56px;
+
+  --line-height-label: 1.4;
+  --line-height-body: 1.5;
+  --line-height-heading: 1.2;
+  --line-height-display: 1.05;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  --radius-shell: 8px;
+  --radius-panel: 8px;
+  --radius-control: 8px;
+  --radius-badge: 8px;
+  --radius-overlay: 8px;
+
+  --shadow-shell: 0 24px 64px rgba(0, 0, 0, 0.24);
+  --shadow-panel: 0 18px 44px rgba(0, 0, 0, 0.18);
+  --shadow-overlay: 0 12px 28px rgba(0, 0, 0, 0.2);
+  --shadow-float: 0 24px 56px rgba(0, 0, 0, 0.22);
+
+  --motion-fast: 120ms;
+  --motion-standard: 180ms;
+  --motion-slow: 240ms;
+  --motion-easing-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-easing-emphasized: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --motion-shell-enter: 180ms;
+  --motion-shell-exit: 120ms;
+  --motion-overlay-enter: 180ms;
+  --motion-overlay-exit: 120ms;
+
+  --focus-ring-width-inner: 2px;
+  --focus-ring-width-outer: 4px;
+
+  --control-min-height: 46px;
+  --control-pad-inline: 16px;
+
+  --shopper-surface-canvas: #090d10;
+  --shopper-surface-panel: #11171b;
+  --shopper-surface-elevated: rgba(20, 27, 31, 0.94);
+  --shopper-surface-overlay: rgba(13, 18, 22, 0.9);
+  --shopper-surface-ghost: rgba(245, 242, 236, 0.04);
+  --shopper-surface-strong: #182027;
+  --shopper-text-primary: #f4f0e8;
+  --shopper-text-secondary: #ccd4da;
+  --shopper-text-muted: #93a0aa;
+  --shopper-text-inverse: #0d1114;
+  --shopper-border: rgba(196, 205, 213, 0.18);
+  --shopper-border-subtle: rgba(196, 205, 213, 0.1);
+  --shopper-border-strong: rgba(218, 225, 231, 0.28);
+  --shopper-accent: #d3c09b;
+  --shopper-accent-contrast: #11161a;
+  --shopper-destructive: #c45a48;
+  --shopper-focus: #d3c09b;
+  --shopper-focus-ring-inner: rgba(9, 13, 16, 0.88);
+  --shopper-focus-ring-outer: #d3c09b;
+  --shopper-shell-backdrop:
+    radial-gradient(circle at 50% -8%, rgba(211, 192, 155, 0.12), transparent 34%),
+    radial-gradient(circle at 12% 14%, rgba(141, 163, 155, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(13, 17, 20, 0.82), rgba(9, 13, 16, 1));
+  --shopper-shell-frame-pad-inline: clamp(20px, 2vw, 40px);
+  --shopper-shell-frame-pad-block: clamp(20px, 2vw, 32px);
+  --shopper-shell-band-height: 104px;
+  --shopper-shell-gap: 24px;
+  --shopper-stage-safe-inset: 32px;
+  --shopper-context-rail-width: clamp(360px, 22vw, 432px);
+  --shopper-overlay-lane-height: 72px;
+
+  --admin-surface-canvas: #0f161d;
+  --admin-surface-panel: #18212a;
+  --admin-surface-elevated: rgba(28, 39, 50, 0.94);
+  --admin-surface-overlay: rgba(24, 33, 42, 0.94);
+  --admin-surface-ghost: rgba(236, 241, 247, 0.04);
+  --admin-surface-strong: #1f2b36;
+  --admin-text-primary: #ecf1f7;
+  --admin-text-secondary: #c5d3de;
+  --admin-text-muted: #aebfce;
+  --admin-text-inverse: #0f161d;
+  --admin-border: rgba(91, 143, 185, 0.24);
+  --admin-border-subtle: rgba(91, 143, 185, 0.16);
+  --admin-border-strong: rgba(125, 179, 223, 0.4);
+  --admin-accent: #5b8fb9;
+  --admin-accent-contrast: #0f161d;
+  --admin-destructive: #c45a48;
+  --admin-focus: #7db3df;
+  --admin-focus-ring-inner: rgba(15, 22, 29, 0.88);
+  --admin-focus-ring-outer: #7db3df;
+  --admin-shell-backdrop:
+    radial-gradient(circle at top, rgba(91, 143, 185, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(24, 33, 42, 0.86), rgba(15, 22, 29, 1));
+  --admin-shell-frame-pad-inline: clamp(24px, 2vw, 32px);
+  --admin-shell-frame-pad-block: clamp(20px, 1.8vw, 28px);
+  --admin-shell-band-height: 80px;
+  --admin-shell-gap: 24px;
+  --admin-nav-rail-width: clamp(240px, 15vw, 288px);
+  --admin-inspector-width: clamp(280px, 18vw, 360px);
+  --admin-command-bar-height: 80px;
+}
+
+[data-shell-mode='shopper'] {
+  --font-family-display-current: var(--font-family-display);
+  --color-surface-canvas: var(--shopper-surface-canvas);
+  --color-surface-panel: var(--shopper-surface-panel);
+  --color-surface-elevated: var(--shopper-surface-elevated);
+  --color-surface-overlay: var(--shopper-surface-overlay);
+  --color-surface-ghost: var(--shopper-surface-ghost);
+  --color-surface-strong: var(--shopper-surface-strong);
+  --color-text-primary: var(--shopper-text-primary);
+  --color-text-secondary: var(--shopper-text-secondary);
+  --color-text-muted: var(--shopper-text-muted);
+  --color-text-inverse: var(--shopper-text-inverse);
+  --color-border: var(--shopper-border);
+  --color-border-subtle: var(--shopper-border-subtle);
+  --color-border-strong: var(--shopper-border-strong);
+  --color-accent: var(--shopper-accent);
+  --color-accent-contrast: var(--shopper-accent-contrast);
+  --color-destructive: var(--shopper-destructive);
+  --color-focus: var(--shopper-focus);
+  --color-focus-ring-inner: var(--shopper-focus-ring-inner);
+  --color-focus-ring-outer: var(--shopper-focus-ring-outer);
+  --shell-backdrop-image: var(--shopper-shell-backdrop);
+  --shell-frame-pad-inline: var(--shopper-shell-frame-pad-inline);
+  --shell-frame-pad-block: var(--shopper-shell-frame-pad-block);
+  --shell-band-height: var(--shopper-shell-band-height);
+  --shell-gap: var(--shopper-shell-gap);
+  --shopper-stage-safe-inset: var(--shopper-stage-safe-inset);
+  --shopper-context-rail-width: var(--shopper-context-rail-width);
+  --shopper-overlay-lane-height: var(--shopper-overlay-lane-height);
+  --admin-nav-rail-width: var(--admin-nav-rail-width);
+  --admin-inspector-width: var(--admin-inspector-width);
+  --admin-command-bar-height: var(--admin-command-bar-height);
+}
+
+[data-shell-mode='admin'] {
+  --font-family-display-current: var(--font-family-admin-display);
+  --color-surface-canvas: var(--admin-surface-canvas);
+  --color-surface-panel: var(--admin-surface-panel);
+  --color-surface-elevated: var(--admin-surface-elevated);
+  --color-surface-overlay: var(--admin-surface-overlay);
+  --color-surface-ghost: var(--admin-surface-ghost);
+  --color-surface-strong: var(--admin-surface-strong);
+  --color-text-primary: var(--admin-text-primary);
+  --color-text-secondary: var(--admin-text-secondary);
+  --color-text-muted: var(--admin-text-muted);
+  --color-text-inverse: var(--admin-text-inverse);
+  --color-border: var(--admin-border);
+  --color-border-subtle: var(--admin-border-subtle);
+  --color-border-strong: var(--admin-border-strong);
+  --color-accent: var(--admin-accent);
+  --color-accent-contrast: var(--admin-accent-contrast);
+  --color-destructive: var(--admin-destructive);
+  --color-focus: var(--admin-focus);
+  --color-focus-ring-inner: var(--admin-focus-ring-inner);
+  --color-focus-ring-outer: var(--admin-focus-ring-outer);
+  --shell-backdrop-image: var(--admin-shell-backdrop);
+  --shell-frame-pad-inline: var(--admin-shell-frame-pad-inline);
+  --shell-frame-pad-block: var(--admin-shell-frame-pad-block);
+  --shell-band-height: var(--admin-command-bar-height);
+  --shell-gap: var(--admin-shell-gap);
+  --shopper-stage-safe-inset: var(--shopper-stage-safe-inset);
+  --shopper-context-rail-width: var(--shopper-context-rail-width);
+  --shopper-overlay-lane-height: var(--shopper-overlay-lane-height);
+  --admin-nav-rail-width: var(--admin-nav-rail-width);
+  --admin-inspector-width: var(--admin-inspector-width);
+  --admin-command-bar-height: var(--admin-command-bar-height);
+}

@@ -1,0 +1,9 @@
+.claude
+.codex
+.planning
+AGENTS.md
+coverage
+dist
+docs
+node_modules
+package-lock.json
