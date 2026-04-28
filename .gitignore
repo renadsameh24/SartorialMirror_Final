@@ -35,3 +35,11 @@ server/__pycache__/
 server/**/*.pyc
 server/.env
 server/.env.*
+
+# website
+website/node_modules/
+website/.env
+website/.env.*
+website/dist/
+website/build/
+website/.next/
